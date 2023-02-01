@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google Sign-In</title>
+</head>
+
+<body>
+    <h1>Google Sign-In</h1>
+
+    <div id="g_id_onload" data-client_id="925180335743-u6qggqh8fci14id1fe8669opqrmlh4nq.apps.googleusercontent.com"
+        data-auto_prompt="false" data-callback="handleCredentialResponse">
+    </div>
+    <!-- data-login_uri="https://your.domain/your_login_endpoint" -->
+    <div class="g_id_signin" data-type="standard" data-size="large" data-theme="outline" data-text="sign_in_with"
+        data-shape="rectangular" data-logo_alignment="left">
+    </div>
+
+    <button id="google_signout">
+        Cerrar Sesión
+    </button>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script>
+        const button = document.getElementById('google_signout');
+        button.onclick = () => {
+            console.log(google.accounts.id);
+            google.accounts.id.disableAutoSelect();
+            google.accounts.id.revoke(localStorage.getItem('email'), done => {
+                // localStorage.clear();
+                // localStorage.reload();
+            });
+        }
+        function handleCredentialResponse(response) {
+
+            const id_token = response.credential;
+            var data = { id_token };
+            var url = 'http://localhost:3000/api/auth/google'
+
+            var myHeaders = new Headers();
+            myHeaders.append("Content-Type", "application/json");
+            var myInit = {
+                method: 'POST',
+                headers: myHeaders,
+                mode: 'cors',
+                cache: 'default',
+                body: JSON.stringify(data)
+            };
+            var myRequest = new Request(url, myInit);
+
+            fetch(myRequest)
+                .then(resp => resp.json())
+                .then(resp => {
+                    console.log('SERVER', resp);
+                    localStorage.setItem('email', resp.user.correo);
+                })
+                .catch(console.warn);
+            // console.log('id_token',response.credential);
+        }
+        // function handleCredentialResponse(response) {
+        //    // decodeJwtResponse() is a custom function defined by you
+        //    // to decode the credential response.
+        //     console.log('id_token', response.credential); //const responsePayload = decodeJwtResponse(response.credential);
+        //     const body = {id_token:response.credential};
+        //     fetch('http://localhost:3000/api/auth/google', {
+        //             method: 'POST',
+        //             headers: {
+        //                 'Content-type':'aplication/json'
+        //             },
+        //             body: JSON.stringify(body)
+        //         }
+        //     )
+        //         .then(
+        //             resp => resp.json())
+        //         .then(
+        //             resp => {
+        //                 console.log(resp)
+        //             }
+        //         )
+        //         .catch(console.warn);
+        // //    console.log("ID: " + responsePayload.sub);
+        // //    console.log('Full Name: ' + responsePayload.name);
+        // //    console.log('Given Name: ' + responsePayload.given_name);
+        // //    console.log('Family Name: ' + responsePayload.family_name);
+        // //    console.log("Image URL: " + responsePayload.picture);
+        // //    console.log("Email: " + responsePayload.email);
+        // }
+    </script>
+</body>
+
+</html>
